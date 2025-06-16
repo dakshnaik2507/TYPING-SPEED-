@@ -1,0 +1,97 @@
+import tkinter as tk
+import time
+import random
+
+sentences = [
+    "The quick brown fox jumps over the lazy dog.",
+    "Python is an easy to learn programming language.",
+    "Artificial intelligence is transforming the future.",
+    "Practice typing every day to increase your speed.",
+    "Never stop learning because life never stops teaching.",
+    "Discipline is the bridge between goals and accomplishment.",
+    "Simplicity is the soul of efficiency.",
+    "Success usually comes to those who are too busy to be looking for it.",
+    "Don't watch the clock; do what it does. Keep going.",
+    "Code is like humor. When you have to explain it, it’s bad.",
+    "Opportunities don't happen. You create them.",
+    "A user interface is like a joke. If you have to explain it, it’s not that good.",
+    "Typing fast is a skill developed through consistency and patience."
+]
+
+start_time = 0
+selected_sentence = ""
+time_limit = 30  # in seconds
+time_left = time_limit
+timer_running = False
+timer_id = None
+
+def start_test():
+    global start_time, selected_sentence, time_left, timer_running
+    selected_sentence = random.choice(sentences)
+    sentence_label.config(text=selected_sentence)
+    entry.delete(0, tk.END)
+    result_label.config(text="")
+    time_left = time_limit
+    timer_label.config(text=f"Time Left: {time_left} sec")
+    start_time = time.time()
+    timer_running = True
+    update_timer()
+
+def update_timer():
+    global time_left, timer_running, timer_id
+    if time_left > 0:
+        time_left -= 1
+        timer_label.config(text=f"Time Left: {time_left} sec")
+        timer_id = root.after(1000, update_timer)
+    else:
+        timer_running = False
+        calculate_speed()
+
+def calculate_speed():
+    global timer_running
+    if timer_running:
+        root.after_cancel(timer_id)
+        timer_running = False
+
+    end_time = time.time()
+    typed_text = entry.get()
+    time_taken = end_time - start_time
+
+    words_typed = len(typed_text.split())
+    speed = round(words_typed / (time_taken / 60)) if time_taken > 0 else 0
+
+    correct_chars = sum(1 for t, a in zip(typed_text, selected_sentence) if t == a)
+    accuracy = round((correct_chars / len(selected_sentence)) * 100) if selected_sentence else 0
+
+    result_label.config(
+        text=f"Speed: {speed} WPM\nAccuracy: {accuracy}%\nTime Taken: {round(time_taken, 2)} sec"
+    )
+
+# UI Setup
+root = tk.Tk()
+root.title("Typing Speed Test")
+root.geometry("700x350")
+root.config(padx=20, pady=20, bg="#f0f0f0")
+
+title = tk.Label(root, text="⌨️ Typing Speed Test", font=("Helvetica", 18, "bold"), bg="#f0f0f0", fg="blue")
+title.pack(pady=10)
+
+sentence_label = tk.Label(root, text="Click 'Start' to begin", font=("Helvetica", 14), wraplength=650, bg="#f0f0f0")
+sentence_label.pack(pady=10)
+
+entry = tk.Entry(root, font=("Helvetica", 14), width=70)
+entry.pack(pady=10)
+
+timer_label = tk.Label(root, text="Time Left: 30 sec", font=("Helvetica", 12), bg="#f0f0f0", fg="green")
+timer_label.pack(pady=5)
+
+start_button = tk.Button(root, text="Start", command=start_test, font=("Helvetica", 12), bg="green", fg="white")
+start_button.pack(pady=5)
+
+submit_button = tk.Button(root, text="Submit", command=calculate_speed, font=("Helvetica", 12), bg="blue", fg="white")
+submit_button.pack(pady=5)
+
+result_label = tk.Label(root, text="", font=("Helvetica", 14), bg="#f0f0f0", fg="darkred")
+result_label.pack(pady=10)
+
+root.mainloop()
